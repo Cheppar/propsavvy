@@ -1,0 +1,1639 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Propsavvy Example Map</title>
+	<style type="text/css">
+		.ps-map-tooltip{			
+		}
+		.ps-map-tooltip .mapboxgl-popup-tip{
+			display:none;
+		}
+		.ps-map-tooltip .mapboxgl-popup-content{
+			background-color: rgba(0,0,0,0.5);
+			color: #FFF;
+			border-radius: 10px;
+			padding: 5px;
+		}
+		.layer-container{
+			top: 53px;
+			position: absolute;
+			width: 100%;
+			height: 8.5rem !important;
+			transition: visibility 0s, opacity 0.5s linear;
+			padding:0px;
+			background:#FFF;
+			visibility: hidden;
+			opacity:0;		
+		}
+		.layer-container.open{
+			visibility: visible;
+			opacity: 1;
+		}
+		.layer-container .col-2{
+			padding: 2.5rem 1.5rem;
+			text-align: center;
+		}
+		.ps-lyr-rb{
+			display: block;
+			margin: 0 auto 10px auto;			
+		}
+
+		.parent-layer-control{
+			width: 20vw;
+			background: rgba(0,0,0,0);
+			height: 25vh;
+			margin: 1vh 1vw;
+			z-index:999;
+			pointer-events: auto !important;			
+		}
+		.parent-layer-control ul{
+			margin: 0;
+			padding: 0;
+			list-style: none;
+			display: inline-block;
+			vertical-align:top;			
+		}
+		.parent-layer-control ul li{
+			background: #8c8c8c;
+			line-height: 20px;
+			font-size: 13px;
+			padding: 3px;
+			margin: 3px;			
+		}
+		.parent-layer-control ul li input[type="radio"]{
+			display:none !important;
+		}
+		.parent-layer-control .parent-layer-list li:hover{
+			cursor:pointer;
+		}
+		.parent-layer-control ul li.selected{
+			background: #333;
+		}
+		.parent-layer-control ul li svg{
+			vertical-align:middle;
+			display:inline-block;	
+		}
+		.parent-layer-control ul li svg path{
+			fill-opacity:1;
+			stroke:#FFFFFF;
+			stroke-width:1;
+			stroke-miterlimit:4;
+			stroke-dasharray:none;
+			stroke-opacity:1;		
+		}
+		.parent-layer-control ul li a{
+			text-decoration: none;
+			color: #FFF;
+			vertical-align:middle;
+			display:inline-block;						
+		}
+		.parent-layer-control ul li span{
+			color:#FFF;
+			font-size:16px;
+			letter-spacing: 1px;
+			margin-right:1px;
+			margin-left:1px;
+		}
+		.parent-layer-control .parent-layer-list li.selected span{
+			display:none;
+		}
+		.parent-layer-control .child-layer-list input[type="checkbox"]{
+			display:none !important;
+		}
+		.parent-layer-control .child-layer-list li span{
+			color:#FFF;
+			font-size:13px;			
+		}
+		.parent-layer-control .child-layer-list li:hover{
+			cursor: pointer;
+		}
+		.parent-layer-control .child-layer-list li.selected{
+			background: #333;
+			color:#FFF;
+		}
+		.auto-suggestions{
+			background: #FFF;
+			z-index:999;
+		}
+		.auto-suggestions .auto-suggestions-item{
+			padding:5px;
+		}
+		.auto-suggestions .auto-suggestions-item a{
+			text-decoration: none;
+			color:#333;
+		}
+		.auto-suggestions .auto-suggestions-item:hover{
+			cursor:pointer;
+			background:#333;			
+		}
+		.auto-suggestions .auto-suggestions-item:hover a{
+			color:#FFF;
+		}
+	</style>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+	<link href="https://api.mapbox.com/mapbox-gl-js/v2.3.0/mapbox-gl.css" rel="stylesheet">
+</head>
+<body>
+
+	<nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4" style="margin-bottom:0px !important;">
+	  <div class="container-fluid">
+	    	<div class="col-6">
+	    		<div class="row">
+	    			<div class="col-2">
+	    				<a class="navbar-brand" href="#">PropSavvy</a>
+	    			</div>
+	    			<div class="col-8">
+	    				<input type="text" class="form-control" placeholder="Enter a search location" id="entity-search" autocomplete="off"/>
+	    			</div>		
+	    			<div class="col-2">
+	    			</div>
+	    		</div>
+	    	</div>		  	
+	  </div>
+	</nav>
+
+	<main class="container-fluid" style="height: calc(100vh - 56px);">
+		<div class="row" style="height:100%;">
+			<div class="col-12" style="height:100%;padding:0px;">
+				<div id="map" style="height:100%;width:100%;"></div>
+			</div>
+		</div>
+	</main>	
+
+	<!-- Templates -->
+	<script type="text/template" id="tpl-layer-control">
+			<ul class="parent-layer-list">
+				<li>
+					<input type="radio" class="parent-radio" value="brma" autocomplete="off" data-name="BRMA"/>
+					<svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" version="1.1"><path style="fill:#58b4f5;" d="M 15.062024,8.0231762 A 6.9513106,6.9513106 0 0 1 8.110713,14.974487 6.9513106,6.9513106 0 0 1 1.1594024,8.0231762 6.9513106,6.9513106 0 0 1 8.110713,1.0718656 6.9513106,6.9513106 0 0 1 15.062024,8.0231762 Z"/></svg>
+					<span>--</span>
+					<a href="#">BRMA</a>
+				</li>
+				<li class="selected">
+					<input type="radio" class="parent-radio" value="county" checked autocomplete="off" data-name="County"/>
+					<svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" version="1.1"><path style="fill:#FF0000;" d="M 15.062024,8.0231762 A 6.9513106,6.9513106 0 0 1 8.110713,14.974487 6.9513106,6.9513106 0 0 1 1.1594024,8.0231762 6.9513106,6.9513106 0 0 1 8.110713,1.0718656 6.9513106,6.9513106 0 0 1 15.062024,8.0231762 Z"/></svg>					
+					<span>--</span>
+					<a href="#">County</a>
+				</li>
+				<li>
+					<input type="radio" class="parent-radio" value="borough" autocomplete="off" data-name="Borough"/>
+					<svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" version="1.1"><path style="fill:#dbaa00;" d="M 15.062024,8.0231762 A 6.9513106,6.9513106 0 0 1 8.110713,14.974487 6.9513106,6.9513106 0 0 1 1.1594024,8.0231762 6.9513106,6.9513106 0 0 1 8.110713,1.0718656 6.9513106,6.9513106 0 0 1 15.062024,8.0231762 Z"/></svg>					
+					<span>--</span>					
+					<a href="#">Borough</a>
+				</li>
+				<li>
+					<input type="radio" class="parent-radio" value="postalarea" autocomplete="off" data-name="Postal Area"/>
+					<svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" version="1.1"><path style="fill:#05d71c;" d="M 15.062024,8.0231762 A 6.9513106,6.9513106 0 0 1 8.110713,14.974487 6.9513106,6.9513106 0 0 1 1.1594024,8.0231762 6.9513106,6.9513106 0 0 1 8.110713,1.0718656 6.9513106,6.9513106 0 0 1 15.062024,8.0231762 Z"/></svg>					
+					<span>--</span>					
+					<a href="#">Postal Area</a>
+				</li>
+				<li>
+					<input type="radio" class="parent-radio" value="postaldistrict" autocomplete="off" data-name="Postal District"/>
+					<svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" version="1.1"><path style="fill:#d800e3;" d="M 15.062024,8.0231762 A 6.9513106,6.9513106 0 0 1 8.110713,14.974487 6.9513106,6.9513106 0 0 1 1.1594024,8.0231762 6.9513106,6.9513106 0 0 1 8.110713,1.0718656 6.9513106,6.9513106 0 0 1 15.062024,8.0231762 Z"/></svg>					
+					<span>--</span>					
+					<a href="#">Postal District</a>
+				</li>
+				<li>
+					<input type="radio" class="parent-radio" value="postalsector" autocomplete="off" data-name="Postal Sector"/>
+					<svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" version="1.1"><path style="fill:#007013;" d="M 15.062024,8.0231762 A 6.9513106,6.9513106 0 0 1 8.110713,14.974487 6.9513106,6.9513106 0 0 1 1.1594024,8.0231762 6.9513106,6.9513106 0 0 1 8.110713,1.0718656 6.9513106,6.9513106 0 0 1 15.062024,8.0231762 Z"/></svg>					
+					<span>--</span>					
+					<a href="#">Postal Sector</a>
+				</li>
+		  	</ul>
+			<ul class="child-layer-list"></ul>	
+	</script>
+
+	
+	
+
+	<!-- Scripts -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/3.2.0/mustache.min.js" integrity="sha512-PZVApsHXBGPJoMmSikCGljCGpHTeYxdB3G+qIPBAh4LryOne3+Mr9cNuVk3ZuC2pQpiEjK2MLB74Q01lSUUb2Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Turf.js/6.5.0/turf.min.js" integrity="sha512-Q7HOppxoH0L2M7hreVoFCtUZimR2YaY0fBewIYzkCgmNtgOOZ5IgMNYxHgfps0qrO1ef5m7L1FeHrhXlq1I9HA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+	<script src="https://api.mapbox.com/mapbox-gl-js/v2.3.0/mapbox-gl.js"></script>
+	<script type="text/javascript">
+
+        /* Custom made jQuery Autocomplete plugin */
+        $.fn.ezAutocomplete = function(options) {
+            let _self = this;
+            let _defaults = {
+                "url": "http://145.239.253.100:4500/api/search/entities?qry=",
+                "lastQueryTimeSec": null
+            };
+            let _opts = $.extend({}, _defaults, options);
+            let _autocompleteContainer = $(`<div class="auto-suggestions" id="${_uuidv4()}"></div>`);            
+
+            function _uuidv4() {
+                return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+                  (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+                );
+              }
+
+            function _search(queryText, callback){
+                let searchTime = Date.now();
+                if(_opts.lastQueryTimeSec == null){
+                    _opts.lastQueryTimeSec = searchTime;
+                }
+                else if(Math.abs(_opts.lastQueryTimeSec - searchTime) > 100)
+                {
+                    _opts.lastQueryTimeSec = searchTime;
+                    let url = `${_opts.url}${queryText}`;
+				    $.get(url, function(data){
+                        callback(data);		
+				    });	                                    
+                }
+                else
+                {
+                    console.log("Behave! You are typing too fast!");
+                }
+            }
+
+            function _handleResponse(data){                
+                _populate(data);
+            }
+
+            function _populate(response){
+                _autocompleteContainer.html("");
+                for(var i = 0; i < response.data.length;i++){                    
+                    let $item = $(`
+                        <div class="auto-suggestions-item">
+                            <a href="javascript:void(0)"
+                            data-name="${response.data[i].name}" 
+                            data-type="${response.data[i].type}"                             
+                            data-id="${response.data[i].id}"
+							data-geom='${response.data[i].geom}'
+                            >
+                                ${response.data[i].name} (${response.data[i].lbl})
+                            </a>
+                    </div>`);
+
+                    $item
+                        .off()
+                        .on("click", function(){
+                            let response = {
+                                    "id": $(this).find("a").attr("data-id"),
+                                    "name": $(this).find("a").attr("data-name"),
+                                    "type": $(this).find("a").attr("data-type"),
+                                    "geom": $(this).find("a").attr("data-geom")
+                                };
+
+                                _self.val(response.name);
+                                _self.blur();
+                                _autocompleteContainer.hide();
+
+                                let available_evts = $._data(_self.get(0), "events");
+
+                                if(Object.keys(available_evts).indexOf("value_changed") > -1){
+                                    _self.trigger("value_changed", [response]);
+                                }	
+
+                        });
+					
+					_autocompleteContainer.append($item);                        
+                }                                           
+
+                let y = window.scrollY + _self.get(0).getBoundingClientRect().top;
+                let x = window.scrollY + _self.get(0).getBoundingClientRect().left;
+                
+                _autocompleteContainer.css({"position": "absolute", "width": _self.get(0).getBoundingClientRect().width, "left": x + "px", "top": "43px"}).show();
+            }
+
+            this.after(_autocompleteContainer);
+					
+			this.on("click", function(){
+                _self.val('');
+                _autocompleteContainer.hide();
+			});
+					
+			this.on("keyup", function(e){
+				_search($(this).val(), _handleResponse);
+			});
+			return this;            
+        };
+
+		var psHeaderModule = (function(window, $){
+			let _domAssets = {};
+
+			function _cacheDom(){
+				_domAssets.entitySearch = $("#entity-search");
+			}
+			function _init(){
+				_cacheDom();
+				_registerEvents();
+				_domAssets.entitySearch.ezAutocomplete();
+			}
+			function _registerEvents(){
+				_domAssets.entitySearch.on("value_changed", function(event, data){
+					psMapModule.jumpToSelectedOnLayer(data);
+				});
+			}
+			return {
+				"init": _init
+			};
+		})(window, jQuery);
+
+		var psMapModule = (function(window, $){
+			let _assets = {
+				"popup": new mapboxgl.Popup({"offset": 5  }),
+				"tooltip": new mapboxgl.Popup({
+					"closeButton": false,
+					"closeOnClick": false,
+					"className": "ps-map-tooltip",
+					"offset": new mapboxgl.Point(0, -15)
+				})
+			};
+			let _domAssets = {};
+			let _state = {
+				"selected": []
+			};
+			let _config = {
+				"accessToken": "pk.eyJ1IjoidGFtaCIsImEiOiJja3B5M2ViM3gwNnE4MnFudXF0ZThwMTJ6In0.c0XLQtMFMUy5vf3v0_R0ww",
+				"apiBaseUrl": 
+				"http://145.239.253.100:4500/api/",
+				"layers": {
+					"brma": {
+						"hex": "#58b4f5", 
+						"mz": 8, 
+						"label": {"mz": 8},
+						"parent": false,
+						"source": "brma-src",
+						"sourceLayer": "brma"
+					},
+					"county" : {
+						"hex": "#FF0000", 
+						"mz": 5, 
+						"label": {"mz": 5},
+						"parent": true,
+						"source": "counties-src",
+						"sourceLayer": "county"						
+					},
+					"postalarea" : {
+						"hex": "#05d71c", 
+						"mz": 10, 
+						"label": {"mz": 10},
+						"parent": false,
+						"source": "postalarea-src",
+						"sourceLayer": "postalarea"						
+					},
+					"postaldistrict": {
+						"hex": "#d800e3", 
+						"mz": 11, 
+						"label": {"mz": 11},
+						"parent": false,
+						"source": "postaldistrict-src",
+						"sourceLayer": "postaldistrict"						
+					},
+					"postalsector": {
+						"hex": "#007013", 
+						"mz": 13, 
+						"label": {"mz": 13},
+						"parent": false,
+						"source": "postalsector-src",
+						"sourceLayer": "postalsector"						
+					},
+					"borough" : {
+						"hex": "#dbaa00", 
+						"mz": 10, 
+						"label": {"mz": 10},
+						"parent": false,
+						"source": "borough-src",
+						"sourceLayer": "borough"						
+					}
+				},
+				"hovered": null
+			};
+
+			function _setParentLayer(layerName){
+				for(var i in _config.layers){
+
+					_assets.map.off("mouseout", i, _layerMouseout({"layerConfigObj": _config.layers[i].parent, "source": _config.layers[i].source, "sourceLayer": _config.layers[i].sourceLayer}));
+
+					_assets.map.off("mousemove", i, _layerMousemove({"layerConfigObj": _config.layers[i].parent, "source": _config.layers[i].source, "sourceLayer": _config.layers[i].sourceLayer}));
+
+					if(i.toLowerCase() == layerName.toLowerCase()){
+						_config.layers[i].parent = true;
+						_assets.map.on("mouseout", i, _layerMouseout({"layerConfigObj": _config.layers[i].parent, "source": _config.layers[i].source, "sourceLayer": _config.layers[i].sourceLayer}));
+
+						_assets.map.on("mousemove", i, _layerMousemove({"layerConfigObj": _config.layers[i].parent, "source": _config.layers[i].source, "sourceLayer": _config.layers[i].sourceLayer}));						
+					}
+					else
+					{
+						_config.layers[i].parent = false;	
+					}
+				}
+			}
+
+			function _createLayerControl(){
+				_assets.layerControl = new layerControl();
+				_assets.map.addControl(_assets.layerControl, "top-left");				
+			}
+
+			function _init(){
+				mapboxgl.accessToken = _config.accessToken;
+				_assets.map = new mapboxgl.Map({
+					"container": "map",
+					"style": "mapbox://styles/tamh/cktcy8zlt0tow17jupqesfunl",
+					"center": [-1.8594463589181272, 53.318170599741286],
+					"zoom": 6,
+					"hash": true
+				});
+				_assets.map.addControl(new mapboxgl.NavigationControl(), "bottom-right");			
+
+				class MyCustomControl {
+				  onAdd(map){
+				    this.map = map;
+				    this.container = document.createElement("div");
+				    this.container.className = "parent-layer-control";
+				    this.container.innerHTML = $("#tpl-layer-control").html();
+
+				    let $container = $(this.container);
+				    
+				    $container
+				    	.find(".parent-layer-list li")
+				    	.on("click", function(event){
+				    		event.stopPropagation();			    				
+				    		const $category = $(this);
+				    		$category.parent().find("li").each(function(idx, elem){
+				    			$(elem).removeClass("selected");
+				    		});
+				    		const $parentCheckbox = $category.addClass("selected").find(".parent-radio").prop("checked", true);
+				    		_setParentLayer($parentCheckbox.val());
+
+				    		//Delete highlight state on all other layers other than the selected
+				    		for(var i = 0; i < _state.selected.length; i++){
+				    			if(_state.selected[i].layer != $category.find(".parent-radio").attr("data-name")){
+									_assets.map.removeFeatureState(_state.selected[i]);
+									_state.selected.splice(i, 1)				    				
+				    			}
+				    		}
+
+
+				    		//Hide all layers but the currently selected
+				    		let layerNames = Object.keys(_config.layers);
+
+				    		for(var i = 0; i < layerNames.length; i++){			    			
+				    			if(layerNames[i] != $category.find(".parent-radio").val()){							
+									_assets.map.setLayoutProperty(layerNames[i], "visibility", "none");
+									_assets.map.setLayoutProperty(`${layerNames[i]}-lyr-stroke`, "visibility", "none");
+									_assets.map.setLayoutProperty(`${layerNames[i]}-lbl`, "visibility", "none");
+								}
+								else
+								{
+									_assets.map.setLayoutProperty(layerNames[i], "visibility", "visible");
+									_assets.map.setLayoutProperty(`${layerNames[i]}-lyr-stroke`, "visibility", "visible");
+									_assets.map.setLayoutProperty(`${layerNames[i]}-lbl`, "visibility", "visible");
+								}
+				    		}
+
+				    		_removeAndReAddLocationsLayer();
+
+				    		//Jump to the default minimum zoom level defined for the selected parent layer
+				    		_assets.map.setZoom(_config.layers[$category.find(".parent-radio").val()].mz);
+
+							
+							$(".child-layer-list")
+								.html("");
+
+							$category.parent().find("li").not(".selected").each(function(idx, elem){								
+								let $layerItem = $(Mustache.render($("#tpl-childlayer-item").html(), {
+									"layerID": $(elem).find(".parent-radio").val(),
+									"layerName": $(elem).find(".parent-radio").attr("data-name")
+								}));
+								$layerItem
+									.off()
+									.on("click", function(event){
+										event.stopPropagation();
+										let $childLayerCheckbox = $(this).find(".childlayer-checkbox");
+										if($childLayerCheckbox.is(":checked")){
+											$childLayerCheckbox.prop("checked", false);
+											$(this).removeClass("selected");
+											_assets.map.setLayoutProperty($childLayerCheckbox.val(), "visibility", "none");
+											_assets.map.setLayoutProperty(`${$childLayerCheckbox.val()}-lyr-stroke`, "visibility", "none");
+											_assets.map.setLayoutProperty(`${$childLayerCheckbox.val()}-lbl`, "visibility", "none");
+										}
+										else
+										{
+											$childLayerCheckbox.prop("checked", true);
+											$(this).addClass("selected");
+											_assets.map.setLayoutProperty($childLayerCheckbox.val(), "visibility", "visible");
+											_assets.map.setLayoutProperty(`${$childLayerCheckbox.val()}-lyr-stroke`, "visibility", "visible");
+											_assets.map.setLayoutProperty(`${$childLayerCheckbox.val()}-lbl`, "visibility", "visible");
+										}
+									});
+								$(".child-layer-list").append($layerItem);
+							});
+
+				    	});
+				    return this.container;
+				  }
+				  onRemove(){
+				    this.container.parentNode.removeChild(this.container);
+				    this.map = undefined;
+				  }
+				}
+
+				const myCustomControl = new MyCustomControl();
+
+				_assets.map.addControl(myCustomControl);
+
+
+				_assets.map.on("load", _prepareContent);
+			}
+
+
+			function _prepareContent(){
+				_assets.tooltip.addTo(_assets.map);
+				_regSources();				
+			}
+
+			function _regSources(){
+
+				_assets.map.addSource("selection-src", {
+					"type": "geojson",
+					"data": {"type": "FeatureCollection", "features": []}
+				});
+
+				_assets.map.addSource("postalarea-src", {
+					'type': 'vector',
+					'tiles': [
+						`${_config.apiBaseUrl}mvt/postal_areas/{z}/{x}/{y}.pbf`
+					],
+					"maxzoom": 10
+				});
+
+				_assets.map.addSource("labels-src", {
+					'type': 'vector',
+					'tiles': [
+						`${_config.apiBaseUrl}mvt/labels/{z}/{x}/{y}.pbf`
+					],
+					"maxzoom": 10
+				});				
+
+				_assets.map.addSource("postaldistrict-src", {
+					'type': 'vector',
+					'tiles': [
+						`${_config.apiBaseUrl}mvt/postal_districts/{z}/{x}/{y}.pbf`
+					],
+					"maxzoom": 10				
+				});	
+
+				_assets.map.addSource("postalsector-src", {
+					'type': 'vector',
+					'tiles': [
+						`${_config.apiBaseUrl}mvt/postal_sectors/{z}/{x}/{y}.pbf`
+					],
+					"maxzoom": 10
+				});
+
+				_assets.map.addSource("counties-src", {
+					'type': 'vector',
+					'tiles': [
+						// `${_config.apiBaseUrl}mvt/counties/{z}/{x}/{y}.pbf`
+					],
+					"maxzoom": 10
+				});			
+
+				_assets.map.addSource("brma-src", {
+					'type': 'vector',
+					'tiles': [
+						`${_config.apiBaseUrl}mvt/brma/{z}/{x}/{y}.pbf`
+					],
+					"maxzoom": 10					
+				});
+
+				_assets.map.addSource("borough-src", {
+					'type': 'vector',
+					'tiles': [
+						`${_config.apiBaseUrl}mvt/boroughs/{z}/{x}/{y}.pbf`
+					],
+					"maxzoom": 20					
+				});				
+
+				_regLayers();
+				_regLayerEvents();				
+			}
+
+			function _regLayers(){
+
+				//STROKES
+
+				/* Postal Sectors Layer's stroke */
+				_assets.map.addLayer({
+					'id': 'postalsector-lyr-stroke',
+					'type': 'line',
+					'source': 'postalsector-src',
+					'source-layer': 'postalsector',
+					'paint': {
+						'line-width': 1.25,
+						'line-color': _config.layers["postalsector"].hex
+					},
+					"layout": {
+						"visibility": "none"
+					},
+					"maxzoom": 22,
+					"minzoom": _config.layers["postalsector"].mz					
+				});	
+
+				_assets.map.addLayer({
+					'id': 'postalsector',
+					'type': 'fill',
+					'source': 'postalsector-src',
+					'source-layer': 'postalsector',
+					'paint': {
+						'fill-opacity': ["case", 
+							["boolean", ["feature-state", "selected"], false], 0.3,
+							["boolean", ["feature-state", "hover"], false], 0.3, 
+							0
+						],
+						'fill-color': ["case", 
+							["boolean", ["feature-state", "selected"], false], _config.layers.postalsector.hex,
+							["boolean", ["feature-state", "hover"], true], _config.layers.postalsector.hex, 
+							"rgba(0,0,0,0.5)"
+						]
+					},
+					"layout": {
+						"visibility": "none"
+					},
+					"minzoom": _config.layers["postalsector"].mz,
+					"maxzoom": 20					
+				});
+
+				// Postal Districts Layer's stroke
+				_assets.map.addLayer({
+					'id': 'postaldistrict-lyr-stroke',
+					'type': 'line',
+					'source': 'postaldistrict-src',
+					'source-layer': 'postaldistrict',
+					'paint': {
+						'line-width': 3,
+						'line-color': _config.layers["postaldistrict"].hex
+					},
+					"layout": {
+						"visibility": "none"
+					},
+					"maxzoom": 20,
+					"minzoom": _config.layers["postaldistrict"].mz										
+				});
+
+				_assets.map.addLayer({
+					'id': 'postaldistrict',
+					'type': 'fill',
+					'source': 'postaldistrict-src',
+					'source-layer': 'postaldistrict',
+					'paint': {
+						'fill-opacity': ["case", 
+							["boolean", ["feature-state", "selected"], false], 0.3, 
+							["boolean", ["feature-state", "hover"], false], 0.3, 
+							0],
+						'fill-color': ["case", 
+							["boolean", ["feature-state", "selected"], false], _config.layers.postaldistrict.hex, 
+							["boolean", ["feature-state", "hover"], true], _config.layers.postaldistrict.hex, 
+							"rgba(0,0,0,0.5)"]
+					},
+					"layout": {
+						"visibility": "none"
+					},
+					"minzoom": _config.layers["postaldistrict"].mz,
+					"maxzoom": 20					
+				});
+
+				
+				// Postal Areas Layer's stroke
+				_assets.map.addLayer({
+					'id': 'postalarea-lyr-stroke',
+					'type': 'line',
+					'source': 'postalarea-src',
+					'source-layer': 'postalarea',
+					'paint': {
+						'line-width': 1.75,
+						'line-color': _config.layers["postalarea"].hex
+					},
+					"layout": {
+						"visibility": "none"
+					},
+					"maxzoom": 22,
+					"minzoom": _config.layers["postalarea"].mz										
+				});	
+
+				_assets.map.addLayer({
+					'id': 'postalarea',
+					'type': 'fill',
+					'source': 'postalarea-src',
+					'source-layer': 'postalarea',
+					'paint': {
+						'fill-opacity': ["case", 
+							["boolean", ["feature-state", "selected"], false], 0.3, 
+							["boolean", ["feature-state", "hover"], false], 0.3,
+						0],
+						'fill-color': ["case", 
+							["boolean", ["feature-state", "selected"], false], _config.layers.postalarea.hex, 
+							["boolean", ["feature-state", "hover"], true], _config.layers.postalarea.hex, 
+							"rgba(0,0,0,0.5)"
+						]
+					},
+					"layout": {
+						"visibility": "none"
+					},
+					"minzoom": _config.layers["postalarea"].mz,
+					"maxzoom": 20					
+				});				
+
+				/* Borough Layer's stroke */
+				_assets.map.addLayer({
+					'id': 'borough-lyr-stroke',
+					'type': 'line',
+					'source': 'borough-src',
+					'source-layer': 'borough',
+					'paint': {
+						'line-width': 2,
+						'line-color': _config.layers["borough"].hex
+					},
+					"layout": {
+						"visibility": "none"
+					},
+					"minzoom": _config.layers["borough"].mz										
+				});	
+
+				_assets.map.addLayer({
+					'id': 'borough',
+					'type': 'fill',
+					'source': 'borough-src',
+					'source-layer': 'borough',
+					'paint': {
+						'fill-opacity': ["case", 
+							["boolean", ["feature-state", "selected"], false], 0.3, 
+							["boolean", ["feature-state", "hover"], false], 0.3,
+							0],
+						'fill-color': ["case", 
+							["boolean", ["feature-state", "selected"], false], _config.layers.borough.hex, 
+							["boolean", ["feature-state", "hover"], true], _config.layers.borough.hex,
+						"rgba(0,0,0,0.5)"]
+					},
+					"layout": {
+						"visibility": "none"
+					},
+					"minzoom": _config.layers["borough"].mz,
+					"maxzoom": 20				
+				});																
+
+				/* BRMA Layer's stroke */
+				_assets.map.addLayer({
+					'id': 'brma-lyr-stroke',
+					'type': 'line',
+					'source': 'brma-src',
+					'source-layer': 'brma',
+					'paint': {
+						'line-width': 2.5,
+						'line-color': _config.layers["brma"].hex
+					},
+					"layout": {
+						"visibility": "none"
+					},
+					"minzoom": _config.layers["brma"].mz,
+					"maxzoom": 20										
+				});
+
+				_assets.map.addLayer({
+					'id': 'brma',
+					'type': 'fill',
+					'source': 'brma-src',
+					'source-layer': 'brma',
+					'paint': {
+						'fill-opacity': ["case", 
+							["boolean", ["feature-state", "selected"], false], 0.3, 
+							["boolean", ["feature-state", "hover"], false], 0.3, 
+							0
+						],
+						'fill-color': ["case", 
+							["boolean", ["feature-state", "selected"], false], _config.layers.brma.hex,
+							["boolean", ["feature-state", "hover"], true], _config.layers.brma.hex,
+							"rgba(0,0,0,0.5)"
+						]
+					},
+					"layout": {
+						"visibility": "none"
+					},
+					"minzoom": _config.layers["brma"].mz,
+					"maxzoom": 20					
+				});	
+
+				/* Counties Layer's stroke */
+				_assets.map.addLayer({
+					'id': 'county-lyr-stroke',
+					'type': 'line',
+					'source': 'counties-src',
+					'source-layer': 'county',
+					'paint': {
+						'line-width': 3,
+						'line-color': _config.layers["county"].hex
+					},
+					"layout": {
+						"visibility": "visible"
+					},
+					"minzoom": _config.layers["county"].mz					
+				});
+				_assets.map.addLayer({
+					'id': 'county',
+					'type': 'fill',
+					'source': 'counties-src',
+					'source-layer': 'county',
+					'paint': {
+						//"fill-opacity": 0
+						'fill-opacity': ["case", 
+							["boolean", ["feature-state", "selected"], false], 0.3,
+							["boolean", ["feature-state", "hover"], false], 0.3,
+							0
+						],
+						'fill-color': ["case", 
+							["boolean", ["feature-state", "selected"], false], _config.layers.county.hex, 
+							["boolean", ["feature-state", "hover"], true], _config.layers.county.hex,
+							"rgba(0,0,0,0)"
+						]
+					},
+					"layout": {
+						"visibility": "visible"
+					},
+					"minzoom": _config.layers["county"].mz,
+					"maxzoom": 20					
+				});				
+
+															
+
+				//LABELS
+
+				_assets.map.addLayer({
+					'id': 'county-lbl',
+					'type': 'symbol',
+					'source': 'labels-src',
+					'source-layer': 'lbl',
+					"filter": ["==", ["get", "type"], "county"],
+					'paint': {
+						'text-color': _config.layers["county"].hex,
+						"text-halo-color": "#000",
+						"text-halo-width": 1
+					},
+					"layout": {
+						'icon-allow-overlap': false,
+						'text-allow-overlap': false,
+						"icon-ignore-placement": false,
+						"text-ignore-placement": false,
+						"visibility": "visible",
+						"symbol-placement": "point",
+						"text-field": ["get", "NAME"],
+						'text-size':18,
+						'text-letter-spacing': 0.05						
+					},
+					"maxzoom": 20,
+					"minzoom": _config.layers["county"].label.mz										
+				});
+
+				_assets.map.addLayer({
+					'id': 'borough-lbl',
+					'type': 'symbol',
+					'source': 'labels-src',
+					'source-layer': 'lbl',
+					"filter": ["==", ["get", "type"], "borough"],
+					'paint': {
+						'text-color': _config.layers["borough"].hex,
+						"text-halo-color": "#000",
+						"text-halo-width": 1
+					},
+					"layout": {
+						'icon-allow-overlap': true,
+						'text-allow-overlap': true,
+						"icon-ignore-placement": false,
+						"text-ignore-placement": false,
+						"visibility": "visible",
+						"symbol-placement": "point",
+						"text-field": ["get", "NAME"],
+						"text-size": 18,
+						'text-letter-spacing': 0.05,
+						"visibility": "none"						
+					},
+					"maxzoom": 22,
+					"minzoom": _config.layers["borough"].mz										
+				});
+
+				_assets.map.addLayer({
+					'id': 'brma-lbl',
+					'type': 'symbol',
+					'source': 'labels-src',
+					'source-layer': 'lbl',
+					"filter": ["==", ["get", "type"], "brma"],
+					'paint': {
+						'text-color': _config.layers["brma"].hex,
+						"text-halo-color": "#000",
+						"text-halo-width": 1
+					},
+					"layout": {
+						'icon-allow-overlap': true,
+						'text-allow-overlap': true,
+						"icon-ignore-placement": false,
+						"text-ignore-placement": false,
+						"visibility": "visible",
+						"symbol-placement": "point",
+						"text-field": ["get", "NAME"],
+						"text-size": 18,
+						'text-letter-spacing': 0.05,
+						"visibility": "none"						
+					},
+					"maxzoom": 22,
+					"minzoom": _config.layers["brma"].mz										
+				});	
+
+				_assets.map.addLayer({
+					'id': 'postalarea-lbl',
+					'type': 'symbol',
+					'source': 'labels-src',
+					'source-layer': 'lbl',
+					"filter": ["==", ["get", "type"], "postalarea"],
+					'paint': {
+						'text-color': _config.layers["postalarea"].hex,
+						"text-halo-color": "#000",
+						"text-halo-width": 1
+					},
+					"layout": {
+						'icon-allow-overlap': false,
+						'text-allow-overlap': false,
+						"icon-ignore-placement": false,
+						"text-ignore-placement": false,
+						"visibility": "visible",
+						"symbol-placement": "point",
+						"text-field": ["string", ["get", "NAME"]],
+						"text-size": 18,
+						'text-letter-spacing': 0.05,
+						"visibility": "none"						
+					},
+					"maxzoom": 22,
+					"minzoom": _config.layers["postalarea"].mz										
+				});
+
+				_assets.map.addLayer({
+					'id': 'postaldistrict-lbl',
+					'type': 'symbol',
+					'source': 'labels-src',
+					'source-layer': 'lbl',
+					"filter": ["==", ["get", "type"], "postaldistrict"],
+					'paint': {
+						'text-color': _config.layers["postaldistrict"].hex,
+						"text-halo-color": "#000",
+						"text-halo-width": 1
+					},
+					"layout": {
+						'icon-allow-overlap': false,
+						'text-allow-overlap': false,
+						"icon-ignore-placement": false,
+						"text-ignore-placement": false,
+						"visibility": "visible",
+						"symbol-placement": "point",
+						"text-field": ["case", ["==", ["get", "NAME"], "0.0000000000 3"], "E1 3", ["get", "NAME"]],
+						"text-size": 18,
+						'text-letter-spacing': 0.05,
+						"visibility": "none"						
+					},
+					"maxzoom": 22,
+					"minzoom": _config.layers["postaldistrict"].mz										
+				});
+
+				_assets.map.addLayer({
+					'id': 'postalsector-lbl',
+					'type': 'symbol',
+					'source': 'labels-src',
+					'source-layer': 'lbl',
+					"filter": ["==", ["get", "type"], "postalsector"],
+					'paint': {
+						'text-color': _config.layers["postalsector"].hex,
+						"text-halo-color": "#eee",
+						"text-halo-width": 1
+					},
+					"layout": {
+						'icon-allow-overlap': false,
+						'text-allow-overlap': false,
+						"icon-ignore-placement": false,
+						"text-ignore-placement": false,
+						"visibility": "visible",
+						"symbol-placement": "point",
+						"text-field": ["to-string", ["get", "NAME"]],
+						"text-size": 18,
+						'text-letter-spacing': 0.05,
+						"visibility": "none"						
+					},
+					"maxzoom": 22,
+					"minzoom": _config.layers["postalsector"].mz										
+				});	
+
+				$("body").find(`input[value='county']`)
+					.parent()
+					.trigger("click");										
+			}
+
+			function _zoomToSelectedEntity(e, features, propertyToCompare){
+
+				let clickedFeature = features.filter(function(feature){
+					return feature.properties[propertyToCompare] == e.features[0].properties[propertyToCompare];
+				});
+
+				let firstFeature = null;
+
+				for(var i = 0; i < clickedFeature.length; i++){
+					switch(true){
+						case (clickedFeature[i].geometry.type == "MultiPolygon"):
+							for(var j = 0;j<clickedFeature[i].geometry.coordinates.length;j++){
+								if(firstFeature == null){
+									firstFeature = turf.polygon(clickedFeature[i].geometry.coordinates[j]);
+								}
+								else
+								{
+									firstFeature = turf.union(firstFeature, turf.polygon(clickedFeature[i].geometry.coordinates[j]))
+								}										
+							}															
+							break;
+						case (clickedFeature[i].geometry.type == "Polygon"):
+							if(firstFeature == null){
+								firstFeature = turf.polygon(clickedFeature[i].geometry.coordinates);
+							}
+							else
+							{
+								firstFeature = turf.union(firstFeature, turf.polygon(clickedFeature[i].geometry.coordinates))
+							}								
+							break;
+					}						
+				}
+
+				let selectedFeatureParts = {
+					"type": "FeatureCollection", 
+					"features": [firstFeature]
+				};					
+
+				let latlngbnds = turf.bbox(firstFeature);
+
+				_assets.map.once('moveend', function(){
+					_displayLocationsFromBounds([latlngbnds[0], latlngbnds[1], latlngbnds[2], latlngbnds[3]].join(","));				
+				});
+				_assets.map.fitBounds(mapboxgl.LngLatBounds.convert([[latlngbnds[0], latlngbnds[1]], [latlngbnds[2], latlngbnds[3]]]));				
+			}
+
+			function _fetchSelectionFromVectorLayer(selectionObj){
+				let features = _assets.map.querySourceFeatures(selectionObj.source, {"sourceLayer": selectionObj.sourceLayer});
+
+				let itemsWithID = features.filter(function(item){
+					return item.properties.ID == selectionObj.id;
+				});
+				
+				let ids = [];
+				for(var i = 0; i < itemsWithID.length; i++){
+					if(ids.indexOf(itemsWithID[i].id) == -1){
+						ids.push(itemsWithID[i].id);
+					}
+				}
+
+				let existingItems = _state.selected.filter(function(item){
+					return item.source == selectionObj.source;
+				});
+
+				if(existingItems.length > 0){
+					for(var i in existingItems){
+						_assets.map.removeFeatureState(existingItems[i]);
+						_state.selected.splice(i, 1);
+					}
+				}
+
+				_assets.map.setFeatureState(
+			      	{
+			        	"source": selectionObj.source,
+			        	"sourceLayer": selectionObj.sourceLayer,
+			        	"id": ids[0]
+			      	},
+			      	{
+			        	"selected": true
+			      	}
+			    );
+
+			    _state.selected.push({
+			        "source": selectionObj.source,
+			        "sourceLayer": selectionObj.sourceLayer,
+			        "id": ids[0],
+			        "layer": selectionObj.layer
+			    });				
+			}
+
+			function _locationClickHandler(e){
+				e.originalEvent.preventDefault();
+				_assets.popup
+					.setLngLat(e.features[0].geometry.coordinates.slice())
+					.setHTML(`<h1 style="font-size:1.5em !important;">${e.features[0].properties.name}</h1><p>${e.features[0].properties.descriptio}</p>`)
+					.addTo(_assets.map);
+
+			}
+
+			function _displayLocationsFromBounds(latlngbndsraw){
+				if(typeof _assets.map.getSource("locations-src") == "undefined"){
+					_assets.map.addSource("locations-src", {
+						'type': 'vector',
+						'tiles': [
+							`${_config.apiBaseUrl}mvt/locations/{z}/{x}/{y}/${latlngbndsraw}`
+						],
+						"maxzoom": 10
+					});
+
+					_assets.map.addLayer({
+						"id": "locations",
+						"source": "locations-src",
+						"source-layer": "locations",
+						"type": "circle",
+						"paint": {
+							"circle-radius": 5,
+							"circle-color": "#FFFFFF",
+							"circle-stroke-color": "#ffa200",
+							"circle-stroke-width": 2
+						}
+					});
+				}
+				else
+				{
+					console.log("B");
+					_removeAndReAddLocationsLayer(latlngbndsraw);										
+				}				
+			}
+
+			function _removeAndReAddLocationsLayer(latlngbndsraw = undefined){
+				if(typeof latlngbndsraw != "undefined"){
+					if(typeof _assets.map.getLayer("locations") != "undefined"){
+						_assets.map.removeLayer("locations");
+					}
+					if(typeof _assets.map.getSource("locations-src") != "undefined"){
+						_assets.map.removeSource("locations-src");
+					}
+				_assets.map.addSource("locations-src", {
+					'type': 'vector',
+					'tiles': [
+						`${_config.apiBaseUrl}mvt/locations/{z}/{x}/{y}/${latlngbndsraw}`
+					],
+					"maxzoom": 10
+				});
+
+				_assets.map.addLayer({
+					"id": "locations",
+					"source": "locations-src",
+					"source-layer": "locations",
+					"type": "circle",
+					"paint": {
+						"circle-radius": 5,
+						"circle-color": "#FFFFFF",
+						"circle-stroke-color": "#ffa200",
+						"circle-stroke-width": 2
+					}
+				});
+				}
+				else
+				{
+					if(typeof _assets.map.getLayer("locations") != "undefined"){
+						_assets.map.removeLayer("locations");
+					}
+					if(typeof _assets.map.getSource("locations-src") != "undefined"){
+						_assets.map.removeSource("locations-src");
+					}				
+				}			
+			}
+
+			function _jumpToSelectedOnLayer(selectedObj){
+
+				let features = null;
+
+				let latlngbnds = JSON.parse(selectedObj.geom).coordinates;				
+
+
+				$("body").find(`input[value='${selectedObj.type}']`)
+					.parent()
+					.trigger("click");
+
+				_assets.map.once('moveend', function(){
+
+					_displayLocationsFromBounds([latlngbnds[0][0].join(","),latlngbnds[0][2].join(",")].join(","));
+
+					switch(true){
+						case (selectedObj.type == "county"):
+
+							_fetchSelectionFromVectorLayer({
+								"source": "counties-src", 
+								"sourceLayer": "county", 
+								"layer": "county", 
+								"id": selectedObj.id
+							});
+						
+						break;
+						case (selectedObj.type == "brma"):						
+
+							_fetchSelectionFromVectorLayer({
+								"source": "brma-src", 
+								"sourceLayer": "brma", 
+								"layer": "brma", 
+								"id": selectedObj.id
+							});								
+
+						break;
+						case (selectedObj.type == "borough"):
+
+							_fetchSelectionFromVectorLayer({
+								"source": "borough-src", 
+								"sourceLayer": "borough", 
+								"layer": "borough", 
+								"id": selectedObj.id
+							});	
+
+						break;
+						case (selectedObj.type == "postalarea"):
+
+							_fetchSelectionFromVectorLayer({
+								"source": "postalarea-src", 
+								"sourceLayer": "postalarea", 
+								"layer": "postalarea", 
+								"id": selectedObj.id
+							});
+
+						break;
+						case (selectedObj.type == "postaldistrict"):
+							_fetchSelectionFromVectorLayer({
+								"source": "postaldistrict-src", 
+								"sourceLayer": "postaldistrict", 
+								"layer": "postaldistrict", 
+								"id": selectedObj.id
+							});						
+						break;
+						case (selectedObj.type == "postalsector"):
+							_fetchSelectionFromVectorLayer({
+								"source": "postalsector-src", 
+								"sourceLayer": "postalsector", 
+								"layer": "postalsector", 
+								"id": selectedObj.id
+							});						
+						break;
+					}
+									
+				});
+
+				_assets.map.fitBounds([latlngbnds[0][0], latlngbnds[0][2]]);
+			}
+
+			function _layerMouseout(params){
+				return function(e){
+					if(params.layerConfigObj == true){
+						_assets.map.getCanvas().style.cursor = 'initial';
+						_assets.tooltip.remove();
+	
+						for(var i in _config.layers){
+							_assets.map.setFeatureState({
+								"source": _config.layers[i].source,
+								"sourceLayer": _config.layers[i].sourceLayer,
+								"id": _config.hovered
+							}, 
+							{
+								"hover": false
+							});	
+						}
+
+						_config.hovered = null;
+					}
+				}
+			}
+
+			function _layerMousemove(params){
+				return function (e){
+					if(params.layerConfigObj == true){							
+						e.originalEvent.preventDefault();
+
+						_assets.map.getCanvas().style.cursor = 'pointer';
+
+						if (e.features.length > 0) {
+
+							_assets.tooltip.setLngLat(e.lngLat).setHTML(`${e.features[0].properties.NAME}`).addTo(_assets.map);
+
+				    		if (_config.hovered != null && _config.hovered != e.features[0].id) {					
+								
+								for(var i in _config.layers){
+									_assets.map.setFeatureState({
+										"source": _config.layers[i].source,
+										"sourceLayer": _config.layers[i].sourceLayer,
+										"id": _config.hovered
+									}, 
+									{
+										"hover": false
+									});
+								}
+
+					    		_config.hovered = e.features[0].id;
+					    					
+					    		_assets.map.setFeatureState({
+					      			"source": params.source,
+					      			"sourceLayer": params.sourceLayer,
+					      			"id": _config.hovered
+					    		}, 
+					    		{
+					      			"hover": true
+					    		});							    
+							}
+							else
+							{
+					    		_config.hovered = e.features[0].id;
+					    					
+					    		_assets.map.setFeatureState({
+					      			"source": params.source,
+					      			"sourceLayer": params.sourceLayer,
+					      			"id": _config.hovered
+					    		}, 
+					    		{
+					      			"hover": true
+					    		});
+				    		}						
+						}
+					}
+				}
+			}
+
+			function _regLayerEvents(){
+
+				_assets.map.on("click", "locations", _locationClickHandler);
+
+				_assets.map.on("click", "county", function(e){
+					if(!e.originalEvent.defaultPrevented){
+						if(_config.layers.county.parent == true){
+
+							e.originalEvent.preventDefault();
+
+							let existingItems = _state.selected.filter(function(item){
+								return item.source == "counties-src";
+							});
+
+							if(existingItems.length > 0){
+								for(var i in existingItems){
+									_assets.map.removeFeatureState(existingItems[i]);
+									_state.selected.splice(i, 1);
+								}
+							}
+
+							_assets.map.setFeatureState(
+			      				{
+			        				"source": "counties-src",
+			        				"sourceLayer": "county",
+			        				"id": e.features[0].id
+			      				},
+			      				{
+			        				"selected": true
+			      				}
+			    			);
+
+			    			_state.selected.push({
+			        			"source": "counties-src",
+			        			"sourceLayer": "county",
+			        			"id": e.features[0].id,
+			        			"layer": "county"
+			      			}); 
+
+							let features = _assets.map.querySourceFeatures("counties-src", {"sourceLayer": "county"});
+							_zoomToSelectedEntity(e, features, "NAME");
+
+		    			}
+		    			else
+		    			{
+		    				//alert("You clicked a county while the parent is not set to counties");
+		    			}
+	    			}
+	    			else
+	    			{
+	    				//alert("Default prevented");
+	    			}
+				});
+
+				_assets.map.on("click", "brma", function(e){					
+					if(!e.originalEvent.defaultPrevented){
+						if(_config.layers.brma.parent == true){
+							e.originalEvent.preventDefault();
+
+
+
+							let existingItems = _state.selected.filter(function(item){
+								return item.source == "brma-src";
+							});
+
+							if(existingItems.length > 0){
+								for(var i in existingItems){
+									_assets.map.removeFeatureState(existingItems[i]);
+									_state.selected.splice(i, 1);
+								}
+							}
+
+							_assets.map.setFeatureState(
+			      				{
+			        				"source": "brma-src",
+			        				"sourceLayer": "brma",
+			        				"id": e.features[0].id
+			      				},
+			      				{
+			        				"selected": true
+			      				}
+			    			);
+
+			    			_state.selected.push({
+			        			"source": "brma-src",
+			        			"sourceLayer": "brma",
+			        			"id": e.features[0].id,
+			        			"layer": "brma"
+			      			});							
+
+							let features = _assets.map.querySourceFeatures("brma-src", {"sourceLayer": "brma"});
+							_zoomToSelectedEntity(e, features, "NAME");
+						}
+						else
+						{
+							//alert("You clicked a BRMA while the parent is not set to BRMAs");
+						}
+					}
+				});					
+
+				_assets.map.on("click", "borough", function(e){
+					if(!e.originalEvent.defaultPrevented){
+						if(_config.layers.borough.parent == true){
+							e.originalEvent.preventDefault();
+
+							let existingItems = _state.selected.filter(function(item){
+								return item.source == "borough-src";
+							});
+
+							if(existingItems.length > 0){
+								for(var i in existingItems){
+									_assets.map.removeFeatureState(existingItems[i]);
+									_state.selected.splice(i, 1);
+								}
+							}
+
+							_assets.map.setFeatureState(
+			      				{
+			        				"source": "borough-src",
+			        				"sourceLayer": "borough",
+			        				"id": e.features[0].id
+			      				},
+			      				{
+			        				"selected": true
+			      				}
+			    			);
+
+			    			_state.selected.push({
+			        			"source": "borough-src",
+			        			"sourceLayer": "borough",
+			        			"id": e.features[0].id,
+			        			"layer": "borough"
+			      			});					
+
+							let features = _assets.map.querySourceFeatures("borough-src", {"sourceLayer": "borough"});
+							_zoomToSelectedEntity(e, features, "NAME");							
+						}						
+					}
+				});
+
+				_assets.map.on("click", "postalarea", function(e){
+					if(!e.originalEvent.defaultPrevented){
+						if(_config.layers.postalarea.parent == true){
+							e.originalEvent.preventDefault();
+
+							let existingItems = _state.selected.filter(function(item){
+								return item.source == "postalarea-src";
+							});
+
+							if(existingItems.length > 0){
+								for(var i in existingItems){
+									_assets.map.removeFeatureState(existingItems[i]);
+									_state.selected.splice(i, 1);
+								}
+							}
+
+							_assets.map.setFeatureState(
+			      				{
+			        				"source": "postalarea-src",
+			        				"sourceLayer": "postalarea",
+			        				"id": e.features[0].id
+			      				},
+			      				{
+			        				"selected": true
+			      				}
+			    			);
+
+			    			_state.selected.push({
+			        			"source": "postalarea-src",
+			        			"sourceLayer": "postalarea",
+			        			"id": e.features[0].id,
+			        			"layer": "postalarea"
+			      			});					
+
+							let features = _assets.map.querySourceFeatures("postalarea-src", {"sourceLayer": "postalarea"});
+							_zoomToSelectedEntity(e, features, "NAME");							
+						}						
+					}
+				});	
+
+				_assets.map.on("click", "postaldistrict", function(e){
+					if(!e.originalEvent.defaultPrevented){
+						if(_config.layers.postaldistrict.parent == true){
+							e.originalEvent.preventDefault();
+
+							let existingItems = _state.selected.filter(function(item){
+								return item.source == "postaldistrict-src";
+							});
+
+							if(existingItems.length > 0){
+								for(var i in existingItems){
+									_assets.map.removeFeatureState(existingItems[i]);
+									_state.selected.splice(i, 1);
+								}
+							}
+
+							_assets.map.setFeatureState(
+			      				{
+			        				"source": "postaldistrict-src",
+			        				"sourceLayer": "postaldistrict",
+			        				"id": e.features[0].id
+			      				},
+			      				{
+			        				"selected": true
+			      				}
+			    			);
+
+			    			_state.selected.push({
+			        			"source": "postaldistrict-src",
+			        			"sourceLayer": "postaldistrict",
+			        			"id": e.features[0].id,
+			        			"layer": "postaldistrict"
+			      			});					
+
+							let features = _assets.map.querySourceFeatures("postaldistrict-src", {"sourceLayer": "postaldistrict"});
+							_zoomToSelectedEntity(e, features, "NAME");							
+						}						
+					}
+				});
+
+				_assets.map.on("click", "postalsector", function(e){
+					if(!e.originalEvent.defaultPrevented){
+						if(_config.layers.postalsector.parent == true){
+							e.originalEvent.preventDefault();
+
+							let existingItems = _state.selected.filter(function(item){
+								return item.source == "postalsector-src";
+							});
+
+							if(existingItems.length > 0){
+								for(var i in existingItems){
+									_assets.map.removeFeatureState(existingItems[i]);
+									_state.selected.splice(i, 1);
+								}
+							}
+
+							_assets.map.setFeatureState(
+			      				{
+			        				"source": "postalsector-src",
+			        				"sourceLayer": "postalsector",
+			        				"id": e.features[0].id
+			      				},
+			      				{
+			        				"selected": true
+			      				}
+			    			);
+
+			    			_state.selected.push({
+			        			"source": "postalsector-src",
+			        			"sourceLayer": "postalsector",
+			        			"id": e.features[0].id,
+			        			"layer": "postalsector"
+			      			});					
+
+							let features = _assets.map.querySourceFeatures("postalsector-src", {"sourceLayer": "postalsector"});
+							_zoomToSelectedEntity(e, features, "NAME");							
+						}						
+					}
+				});				
+			}
+
+			return {
+				"init": _init,
+				"setParentLayer": _setParentLayer,
+				"jumpToSelectedOnLayer": _jumpToSelectedOnLayer
+			};
+		})(window, jQuery);
+
+		var psAppModule = (function(window, jQuery){
+			function _init(){
+				psHeaderModule.init();
+				psMapModule.init();
+			}
+			return {
+				"init": _init
+			};
+		})(window, jQuery);
+
+		window.onload = function(){
+			psAppModule.init();			
+		};
+	</script>
+</body>
+</html>
