@@ -64,7 +64,8 @@
 			vertical-align:top;			
 		}
 		.parent-layer-control ul li{
-			background: #8c8c8c;
+			/*background: #8c8c8c;*/
+			color: "red";
 			line-height: 20px;
 			font-size: 13px;
 			padding: 3px;
@@ -93,7 +94,8 @@
 		}
 		.parent-layer-control ul li a{
 			text-decoration: none;
-			color: #FFF;
+			margin-top: -18px;
+			color: "black";
 			vertical-align:middle;
 			display:inline-block;						
 		}
@@ -105,7 +107,7 @@
 			margin-left:1px;
 		}
 		.parent-layer-control .parent-layer-list li.selected span{
-			display:none;
+			/*display:none;*/
 		}
 		.parent-layer-control .child-layer-list input[type="checkbox"]{
 			display:none !important;
@@ -1317,114 +1319,121 @@
 							</div>
 						</div>
 					</main>
-
-		<script type="text/template" id="tpl-layer-control">
+ <script type="text/template" id="tpl-layer-control">
 			
 <div class="search_filter_map accordion accordion-toggle-arrow radio-list" id="accordionExample4">
 	<div class="card">
+		
 		<div class="card-header" id="headingOne4">
 			<div class="card-title collapsed " data-toggle="collapse" data-target="#collapseOne4" aria-expanded="true" >
+			<label class="radio" >
+						<input type="radio" name="radios4" >
+				<span></span>
+			</label>Postcode</div>
+		</div>
 
-				<label class="radio" >
-							<input type="radio" name="radios4" checked="checked">
-									<span></span></label>Postcode</div>
-									</div>
-									<div id="collapseOne4" class="collapse" data-parent="#accordionExample4" style="">
-															
-									<div class="card-body">
-										*-	Postal codes used in the United Kingdom are alphanumeric and identify locations from a general area down to a specific georgaphic location.
-
-
+				<div id="collapseOne4" class="collapse" data-parent="#accordionExample4" style="">
+				<div class="card-body">
+					*-	Postal codes used in the United Kingdom are alphanumeric and identify locations from a general area down to a specific georgaphic location.
+			
 			<ul class="parent-layer-list">
-				
 				<li>
-					<input type="radio" class="parent-radio" value="postalarea" autocomplete="off" data-name="Postal Area"/>
-					<svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" version="1.1"><path style="fill:#05d71c;" d="M 15.062024,8.0231762 A 6.9513106,6.9513106 0 0 1 8.110713,14.974487 6.9513106,6.9513106 0 0 1 1.1594024,8.0231762 6.9513106,6.9513106 0 0 1 8.110713,1.0718656 6.9513106,6.9513106 0 0 1 15.062024,8.0231762 Z"/></svg>					
-					<span>--</span>					
-					<a href="#">Postal Area</a>
+				<input class="parent-radio" type="checkbox"  name="Checkboxes4"  value="postalarea" autocomplete="off" data-name="Postal Area">
+				<span> </span>					
+				<a href="#">Postal Area</a>
 				</li>
+
 				<li>
 					<input type="radio" class="parent-radio" value="postaldistrict" autocomplete="off" data-name="Postal District"/>
-					<svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" version="1.1"><path style="fill:#d800e3;" d="M 15.062024,8.0231762 A 6.9513106,6.9513106 0 0 1 8.110713,14.974487 6.9513106,6.9513106 0 0 1 1.1594024,8.0231762 6.9513106,6.9513106 0 0 1 8.110713,1.0718656 6.9513106,6.9513106 0 0 1 15.062024,8.0231762 Z"/></svg>					
-					<span>--</span>					
+					<input class="parent-radio" type="checkbox" name="Checkboxes4"  value="postaldistrict" autocomplete="off" data-name="Postal District">	
+
+					<span></span>					
 					<a href="#">Postal District</a>
 				</li>
+
 				<li>
-					<input type="radio" class="parent-radio" value="postalsector" autocomplete="off" data-name="Postal Sector"/>
-					<svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" version="1.1"><path style="fill:#007013;" d="M 15.062024,8.0231762 A 6.9513106,6.9513106 0 0 1 8.110713,14.974487 6.9513106,6.9513106 0 0 1 1.1594024,8.0231762 6.9513106,6.9513106 0 0 1 8.110713,1.0718656 6.9513106,6.9513106 0 0 1 15.062024,8.0231762 Z"/></svg>					
-					<span>--</span>					
+					<input type="checkbox" class="parent-radio" value="postalsector" autocomplete="off" data-name="Postal Sector"/>
+										
+					<span></span>
+
 					<a href="#">Postal Sector</a>
 				</li>
 		  	</ul>
-
-										</div>
-											</div>
-												</div>
-
-
-												<div class="card">
-														<div class="card-header" id="headingTwo4">
-															<div class="card-title collapsed" data-toggle="collapse" data-target="#collapseTwo4">
-															<label class="radio">
-																<input type="radio"  name="radios4">
-																<span></span></label>
-																BRMA</div>
-														</div>
-														<div id="collapseTwo4" class="collapse" data-parent="#accordionExample4">
-															<div class="card-body">LHA rates relate to the area in which you make your claim. These areas are called broad rental market areas (BRMA)
-															
-															
-
-																<ul class="parent-layer-list">
-				<li>
-					<input type="radio" class="parent-radio" value="brma" autocomplete="off" data-name="BRMA"/>
-					<svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" version="1.1"><path style="fill:#58b4f5;" d="M 15.062024,8.0231762 A 6.9513106,6.9513106 0 0 1 8.110713,14.974487 6.9513106,6.9513106 0 0 1 1.1594024,8.0231762 6.9513106,6.9513106 0 0 1 8.110713,1.0718656 6.9513106,6.9513106 0 0 1 15.062024,8.0231762 Z"/></svg>
-					<span>--</span>
-					<a href="#">BRMA</a>
-				</li>
-			</ul>
+		</div>
+	</div>
+</div>
 
 
-															</div>
-														</div>
-													</div>
-
-
-
-				<div class="card">
-						<div class="card-header" id="headingThree4">
-							<div class="card-title collapsed" data-toggle="collapse" data-target="#collapseThree4">
-								<label class="radio">
-									<input type="radio"  name="radios4">
-										<span></span></label>Counties</div>
-														</div>
-														<div id="collapseThree4" class="collapse" data-parent="#accordionExample4">
-															<div class="card-body">The counties of the United Kingdom are subnational divisions of the United Kingdom, used for the purposes of administrative, geographical and political demarcation
-
+<div class="card">
+	<div class="card-header" id="headingTwo4">
+		<div class="card-title collapsed" data-toggle="collapse" data-target="#collapseTwo4">
+			<label class="radio">
+				<input type="radio" checked="checked" name="radios4">
+					<span></span></label>
+					BRMA</div>
+			</div>
+				<div id="collapseTwo4" class="collapse" data-parent="#accordionExample4">
+					<div class="card-body">
+						LHA rates relate to the area in which you make your claim. These areas are called broad rental market areas (BRMA)
 			<ul class="parent-layer-list">
-				<li class="selected">
-					<input type="radio" class="parent-radio" value="county" checked autocomplete="off" data-name="County"/>
-					<svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" version="1.1"><path style="fill:#FF0000;" d="M 15.062024,8.0231762 A 6.9513106,6.9513106 0 0 1 8.110713,14.974487 6.9513106,6.9513106 0 0 1 1.1594024,8.0231762 6.9513106,6.9513106 0 0 1 8.110713,1.0718656 6.9513106,6.9513106 0 0 1 15.062024,8.0231762 Z"/></svg>					
-					<span>--</span>
-					<a href="#">County</a>
-				</li>
-
-
 				<li>
-					<input type="radio" class="parent-radio" value="borough" autocomplete="off" data-name="Borough"/>
-					<svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" version="1.1"><path style="fill:#dbaa00;" d="M 15.062024,8.0231762 A 6.9513106,6.9513106 0 0 1 8.110713,14.974487 6.9513106,6.9513106 0 0 1 1.1594024,8.0231762 6.9513106,6.9513106 0 0 1 8.110713,1.0718656 6.9513106,6.9513106 0 0 1 15.062024,8.0231762 Z"/></svg>					
-					<span>--</span>					
-					<a href="#">Borough</a>
+					<label class="radio" >
+					<input type="checkbox" checked="checked" class="parent-radio" value="brma" autocomplete="off" data-name="BRMA"/>
+					
+					<span></span>
+
+					<a href="#">BRMA</a>
+				</label>
 				</li>
 			</ul>
+		</div>
+	</div>
+</div>
 
-			<!-- <ul class="child-layer-list"></ul> -->
 
-															</div>
-														</div>
-													</div>
-												</div>
 
+	<div class="card">
+    <div class="card-header" id="headingThree4">
+        <div class="card-title collapsed" data-toggle="collapse" data-target="#collapseThree4">
+            <label class="radio">
+                <input type="radio" name="radios4">
+                <span></span></label>Counties</div>
+    </div>
+    <div id="collapseThree4" class="collapse" data-parent="#accordionExample4">
+        <div class="card-body">The counties of the United Kingdom are subnational divisions of the United Kingdom, used for the purposes of administrative, geographical and political demarcation
+            <ul class="parent-layer-list">
+                <li class="selected">
+                    <input type="checkbox" class="parent-radio" value="county" checked autocomplete="off" data-name="County" />
+                    <span></span>
+                    <a href="#">County</a>
+                </li>
+            </ul>
+            <!-- <ul class="child-layer-list"></ul> -->
+        </div>
+    </div>
+</div>
+
+			<div class="card">
+    <div class="card-header" id="headingFour4">
+        <div class="card-title collapsed" data-toggle="collapse" data-target="#collapseFour4">
+            <label class="radio">
+                <input type="radio" name="radios4">
+                <span></span></label>Borough</div>
+    </div>
+    <div id="collapseFour4" class="collapse" data-parent="#accordionExample4">
+        <div class="card-body">A borough is an administrative division in various English-speaking countries.
+            <ul class="parent-layer-list">
+                <li>
+                    <input type="checkbox" class="parent-radio" value="borough" autocomplete="off" data-name="Borough" />
+                    <span></span>
+                    <a href="#">Borough</a>
+                </li>
+            </ul>
+             <ul class="child-layer-list"></ul>
+        </div>
+    </div>
+</div>
+</div>
 
 		<!-- 	<ul class="parent-layer-list">
 				<li>
@@ -1495,9 +1504,6 @@
 															
 														<div class="card-body">
 															*-	Postal codes used in the United Kingdom are alphanumeric and identify locations from a general area down to a specific georgaphic location.
-
-		
-																
 
 
 														</div>
